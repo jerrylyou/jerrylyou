@@ -15,6 +15,7 @@
  */
 package com.alibaba.nacos.test.naming;
 
+import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingFactory;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
@@ -22,6 +23,7 @@ import com.alibaba.nacos.client.naming.NacosNamingService;
 import com.alibaba.nacos.naming.NamingApp;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,24 +31,26 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.alibaba.nacos.test.naming.NamingBase.TEST_PORT;
-import static com.alibaba.nacos.test.naming.NamingBase.randomDomainName;
+import static com.alibaba.nacos.test.naming.NamingBase.*;
 
 /**
- * Created by wangtong.wt on 2018/6/20.
+ * Created by lingwei.cao on 2018/11/13.
  *
- * @author wangtong.wt
- * @date 2018/6/20
+ * @author lingwei.cao
+ * @date 2018/11/13
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = NamingApp.class, properties = {"server.servlet.context-path=/nacos"},
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class DeregisterInstance_ITCase {
+public class AutoDeregisterInstance_ITCase {
 
     private NamingService naming;
+    private NamingService naming2;
     @LocalServerPort
     private int port;
 
@@ -55,59 +59,72 @@ public class DeregisterInstance_ITCase {
         if (naming == null) {
             TimeUnit.SECONDS.sleep(10);
             naming = NamingFactory.createNamingService("127.0.0.1" + ":" + port);
+//            naming = NamingFactory.createNamingService("11.239.112.230:8848,11.239.113.118:8848,11.239.113.156:8848");
+
         }
     }
 
+
+
+
     /**
-     * 删除service中默认cluster的一个ip
+     * 客户端停止上报实例心跳，服务端自动注销实例
      *
      * @throws Exception
      */
     @Test
-    public void dregDomTest() throws Exception {
+    public void autoDregDomTest() throws Exception {
+
+        String serviceName = randomDomainName();
+//        String serviceName="test.1";
+        System.out.println(serviceName);
+
+        naming.registerInstance(serviceName, "127.0.0.1", TEST_PORT,"c1");
+        naming.registerInstance(serviceName, "127.0.0.2", TEST_PORT,"c2");
+
+        TimeUnit.SECONDS.sleep(5);
+
+        List<Instance> instances;
+        instances = naming.getAllInstances(serviceName);
+
+        Assert.assertEquals(2, instances.size());
+
+        NacosNamingService namingServiceImpl = (NacosNamingService) naming;
+
+        namingServiceImpl.getBeatReactor().removeBeatInfo(serviceName, "127.0.0.1", TEST_PORT);
+
+        TimeUnit.SECONDS.sleep(35);
+
+        instances = naming.getAllInstances(serviceName);
+
+//        TimeUnit.SECONDS.sleep(1000000L);
+
+        Assert.assertEquals(1, instances.size());
+
+        instances = naming.getAllInstances(serviceName, Arrays.asList("c2"));
+        Assert.assertEquals(instances.size(), 1);
+
+        instances = naming.getAllInstances(serviceName, Arrays.asList("c1"));
+        Assert.assertEquals(0, instances.size());
+
+//        TimeUnit.SECONDS.sleep(1000000L);
+
+    }
+
+
+    /**
+     * 客户端停止上报实例心跳，服务端自动注销实例,恢复心跳，服务端自动注册实例
+     *
+     * @throws Exception
+     */
+    @Test
+    public void autoRegDomTest() throws Exception {
 
         String serviceName = randomDomainName();
 
         naming.registerInstance(serviceName, "127.0.0.1", TEST_PORT);
         naming.registerInstance(serviceName, "127.0.0.2", TEST_PORT);
 
-        TimeUnit.SECONDS.sleep(3);
-
-        List<Instance> instances = naming.getAllInstances(serviceName);
-
-        Assert.assertEquals(instances.size(), 2);
-
-        naming.deregisterInstance(serviceName, "127.0.0.1", TEST_PORT);
-
-        TimeUnit.SECONDS.sleep(2);
-
-        instances = naming.getAllInstances(serviceName);
-
-        Assert.assertEquals(instances.size(), 1);
-        Assert.assertEquals(instances.get(0).getIp(), "127.0.0.2");
-
-        naming.deregisterInstance(serviceName, "127.0.0.2", TEST_PORT);
-
-        TimeUnit.SECONDS.sleep(2);
-
-        instances = naming.getAllInstances(serviceName);
-
-        Assert.assertEquals(0, instances.size());
-    }
-
-    /**
-     * 删除service中指定cluster的一个ip
-     *
-     * @throws Exception
-     */
-    @Test
-    public void dregDomClusterTest() throws Exception {
-
-        String serviceName = randomDomainName();
-
-        naming.registerInstance(serviceName, "127.0.0.1", TEST_PORT, "c1");
-        naming.registerInstance(serviceName, "127.0.0.2", TEST_PORT, "c2");
-
         TimeUnit.SECONDS.sleep(5);
 
         List<Instance> instances;
@@ -115,59 +132,18 @@ public class DeregisterInstance_ITCase {
 
         Assert.assertEquals(instances.size(), 2);
 
-        naming.deregisterInstance(serviceName, "127.0.0.1", TEST_PORT, "c1");
+        NacosNamingService namingServiceImpl = (NacosNamingService) naming;
 
-        TimeUnit.SECONDS.sleep(2);
+        namingServiceImpl.getBeatReactor().removeBeatInfo(serviceName, "127.0.0.1", TEST_PORT);
 
-        instances = naming.getAllInstances(serviceName);
+        TimeUnit.SECONDS.sleep(35);
 
-        Assert.assertEquals(instances.size(), 1);
+      //  namingServiceImpl.getBeatReactor().
 
-        instances = naming.getAllInstances(serviceName, Arrays.asList("c2"));
-        Assert.assertEquals(instances.size(), 1);
 
-        instances = naming.getAllInstances(serviceName, Arrays.asList("c1"));
+
     }
 
-
-
-
-    /**
-     * 删除service中最后一个Instance，允许删除，结果返回null
-     *
-     * @throws Exception
-     */
-    @Test
-    public void dregLastDomTest() throws Exception {
-
-        String serviceName = randomDomainName();
-
-        naming.registerInstance(serviceName, "127.0.0.1", TEST_PORT, "c1");
-        naming.registerInstance(serviceName, "127.0.0.2", TEST_PORT, "c2");
-
-        TimeUnit.SECONDS.sleep(5);
-
-        List<Instance> instances;
-        instances = naming.getAllInstances(serviceName);
-
-        Assert.assertEquals(instances.size(), 2);
-
-        naming.deregisterInstance(serviceName, "127.0.0.1", TEST_PORT, "c1");
-
-        TimeUnit.SECONDS.sleep(2);
-
-        instances = naming.getAllInstances(serviceName);
-
-        Assert.assertEquals(instances.size(), 1);
-
-        instances = naming.getAllInstances(serviceName, Arrays.asList("c2"));
-        Assert.assertEquals(instances.size(), 1);
-
-        naming.deregisterInstance(serviceName,"127.0.0.2", TEST_PORT, "c2");
-        TimeUnit.SECONDS.sleep(5);
-        instances = naming.getAllInstances(serviceName);
-        Assert.assertEquals(instances.size(), 0);
-    }
 
 
 
