@@ -22,6 +22,7 @@
     <groupId>com.alibaba.nacos</groupId>
     <artifactId>nacos-all</artifactId>
     <version>0.2.0-SM-SNAPSHOT</version>
+
     <packaging>pom</packaging>
 
     <name>Alibaba NACOS ${project.version}</name>
@@ -36,7 +37,7 @@
         <url>git@github.com:alibaba/nacos.git</url>
         <connection>scm:git@github.com:alibaba/nacos.git</connection>
         <developerConnection>scm:git@github.com:alibaba/nacos.git</developerConnection>
-        <tag>nacos-all-0.3.0</tag>
+        <tag>nacos-all-0.5.0</tag>
     </scm>
 
     <mailingLists>
@@ -184,71 +185,73 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--<plugin>-->
-                <!--<groupId>org.apache.maven.plugins</groupId>-->
-                <!--<artifactId>maven-pmd-plugin</artifactId>-->
-                <!--<version>3.8</version>-->
-                <!--<configuration>-->
-                    <!--<rulesets>-->
-                        <!--<ruleset>rulesets/java/ali-comment.xml</ruleset>-->
-                        <!--<ruleset>rulesets/java/ali-concurrent.xml</ruleset>-->
-                        <!--<ruleset>rulesets/java/ali-constant.xml</ruleset>-->
-                        <!--<ruleset>rulesets/java/ali-exception.xml</ruleset>-->
-                        <!--<ruleset>rulesets/java/ali-flowcontrol.xml</ruleset>-->
-                        <!--<ruleset>rulesets/java/ali-naming.xml</ruleset>-->
-                        <!--<ruleset>rulesets/java/ali-oop.xml</ruleset>-->
-                        <!--<ruleset>rulesets/java/ali-orm.xml</ruleset>-->
-                        <!--<ruleset>rulesets/java/ali-other.xml</ruleset>-->
-                        <!--<ruleset>rulesets/java/ali-set.xml</ruleset>-->
-                    <!--</rulesets>-->
-                    <!--<printFailingErrors>true</printFailingErrors>-->
-                <!--</configuration>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<goals>-->
-                            <!--<goal>check</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-                <!--<dependencies>-->
-                    <!--<dependency>-->
-                        <!--<groupId>com.alibaba.p3c</groupId>-->
-                        <!--<artifactId>p3c-pmd</artifactId>-->
-                        <!--<version>1.3.0</version>-->
-                    <!--</dependency>-->
-                <!--</dependencies>-->
-            <!--</plugin>-->
-            <!--<plugin>-->
-                <!--<groupId>org.apache.rat</groupId>-->
-                <!--<artifactId>apache-rat-plugin</artifactId>-->
-                <!--<version>0.12</version>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>3.8</version>
+                <configuration>
+                    <rulesets>
+                        <ruleset>rulesets/java/ali-comment.xml</ruleset>
+                        <ruleset>rulesets/java/ali-concurrent.xml</ruleset>
+                        <ruleset>rulesets/java/ali-constant.xml</ruleset>
+                        <ruleset>rulesets/java/ali-exception.xml</ruleset>
+                        <ruleset>rulesets/java/ali-flowcontrol.xml</ruleset>
+                        <ruleset>rulesets/java/ali-naming.xml</ruleset>
+                        <ruleset>rulesets/java/ali-oop.xml</ruleset>
+                        <ruleset>rulesets/java/ali-orm.xml</ruleset>
+                        <ruleset>rulesets/java/ali-other.xml</ruleset>
+                        <ruleset>rulesets/java/ali-set.xml</ruleset>
+                    </rulesets>
+                    <printFailingErrors>true</printFailingErrors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.alibaba.p3c</groupId>
+                        <artifactId>p3c-pmd</artifactId>
+                        <version>1.3.0</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <version>0.12</version>
 
-                <!--<configuration>-->
+                <configuration>
 
-                    <!--<excludes>-->
-                        <!--<exclude>.travis.yml</exclude>-->
-                        <!--<exclude>CONTRIBUTING.md</exclude>-->
-                        <!--<exclude>CHANGELOG.md</exclude>-->
-                        <!--<exclude>style/codeStyle.md</exclude>-->
-                        <!--<exclude>REPORTING-BUGS.md</exclude>-->
-                        <!--<exclude>README.md</exclude>-->
-                        <!--<exclude>.github/*</exclude>-->
-                        <!--<exclude>.github/ISSUE_TEMPLATE/bug_report.md</exclude>-->
-                        <!--<exclude>.github/ISSUE_TEMPLATE/feature_request.md</exclude>-->
-                        <!--<exclude>src/main/resources/*/*/*</exclude>-->
-                        <!--<exclude>src/main/resources/*/*</exclude>-->
-                        <!--<exclude>src/main/resources/*</exclude>-->
-                        <!--<exclude>src/test/resources/*</exclude>-->
-                        <!--<exclude>src/main/resources/static/**/*.js</exclude>-->
-                        <!--<exclude>src/main/resources/**/*.svg</exclude>-->
-                        <!--<exclude>src/main/resources/static/public/css/console1412.css</exclude>-->
-                        <!--<exclude>src/main/resources/static/public/js/vs/editor/editor.main.css</exclude>-->
-                        <!--<exclude>bin/*</exclude>-->
-                        <!--<exclude>conf/*</exclude>-->
-                        <!--<exclude>derby.log</exclude>-->
-                    <!--</excludes>-->
-                <!--</configuration>-->
-            <!--</plugin>-->
+                    <excludes>
+                        <exclude>.travis.yml</exclude>
+                        <exclude>CONTRIBUTING.md</exclude>
+                        <exclude>CODE_OF_CONDUCT.md</exclude>
+                        <exclude>CHANGELOG.md</exclude>
+                        <exclude>style/codeStyle.md</exclude>
+                        <exclude>REPORTING-BUGS.md</exclude>
+                        <exclude>README.md</exclude>
+                        <exclude>.github/**/*</exclude>
+                        <exclude>src/main/resources/*/*/*</exclude>
+                        <exclude>src/main/resources/*/*</exclude>
+                        <exclude>src/main/resources/*</exclude>
+                        <exclude>src/test/resources/*</exclude>
+                        <exclude>src/main/resources/static/**/*.js</exclude>
+                        <exclude>src/main/resources/**/*.svg</exclude>
+                        <exclude>src/main/resources/static/public/css/console1412.css</exclude>
+                        <exclude>src/main/resources/static/js/vs/**/*</exclude>
+                        <exclude>src/main/resources/static/console-fe/public/js/vs/editor/editor.main.css</exclude>
+                        <exclude>src/main/resources/static/console-fe/public/css/console1412.css</exclude>
+                        <exclude>src/main/resources/static/console-fe/.vscode/settings.json</exclude>
+                        <exclude>bin/*</exclude>
+                        <exclude>conf/*</exclude>
+                        <exclude>derby.log</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.0.2</version>
@@ -303,10 +306,11 @@
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.19.1</version>
+                <version>2.20</version>
                 <configuration>
                     <forkCount>1</forkCount>
                     <reuseForks>true</reuseForks>
+                    <testFailureIgnore>true</testFailureIgnore>
                 </configuration>
             </plugin>
             <plugin>

@@ -19,6 +19,7 @@
         <groupId>com.alibaba.nacos</groupId>
         <artifactId>nacos-all</artifactId>
         <version>0.2.0-SM-SNAPSHOT</version>
+
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -58,37 +59,4 @@
         </dependency>
 
     </dependencies>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>central</id>
-            <url>http://mvnrepo.alibaba-inc.com/mvn/repository</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-            <id>snapshots</id>
-            <url>http://mvnrepo.alibaba-inc.com/mvn/repository</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
-    <distributionManagement>
-        <repository>
-            <id>releases</id>
-            <url>http://mvnrepo.alibaba-inc.com/mvn/releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>snapshots</id>
-            <url>http://mvnrepo.alibaba-inc.com/mvn/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
 </project>

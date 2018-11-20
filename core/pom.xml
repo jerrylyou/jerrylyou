@@ -19,6 +19,7 @@
         <groupId>com.alibaba.nacos</groupId>
         <artifactId>nacos-all</artifactId>
         <version>0.2.0-SM-SNAPSHOT</version>
+
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -64,4 +65,13 @@
         </dependency>
 
     </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
 </project>

@@ -20,7 +20,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.alibaba.nacos.api.naming.pojo.AbstractHealthChecker;
-import com.alibaba.nacos.common.util.IoUtils;
 import com.alibaba.nacos.common.util.Md5Utils;
 import com.alibaba.nacos.common.util.SystemUtils;
 import com.alibaba.nacos.naming.boot.RunningConfig;
@@ -54,7 +53,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -66,6 +68,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static com.alibaba.nacos.common.util.SystemUtils.readClusterConf;
+import static com.alibaba.nacos.common.util.SystemUtils.writeClusterConf;
 
 /**
  * Old API entry
@@ -270,7 +275,6 @@ public class ApiCommands {
     public JSONObject clientBeat(HttpServletRequest request) throws Exception {
 
         String beat = BaseServlet.required(request, "beat");
-        Loggers.SRV_LOG.info("receive beat: " + beat);
         RsInfo clientBeat = JSON.parseObject(beat, RsInfo.class);
         if (StringUtils.isBlank(clientBeat.getCluster())) {
             clientBeat.setCluster(UtilsAndCommons.DEFAULT_CLUSTER_NAME);
@@ -367,8 +371,9 @@ public class ApiCommands {
         boolean isUseSpecifiedURL = Boolean.parseBoolean(BaseServlet.optional(request, "isUseSpecifiedURL", "false"));
         String envAndSite = BaseServlet.optional(request, "envAndSites", StringUtils.EMPTY);
         boolean resetWeight = Boolean.parseBoolean(BaseServlet.optional(request, "resetWeight", "false"));
-        boolean enableHealthCheck = Boolean.parseBoolean(BaseServlet.optional(request, "enableHealthCheck", "false"));
-        boolean enable = Boolean.parseBoolean(BaseServlet.optional(request, "enable", "true"));
+        boolean enableHealthCheck = Boolean.parseBoolean(BaseServlet.optional(request, "enableHealthCheck", "true"));
+        boolean enable = Boolean.parseBoolean(BaseServlet.optional(request, "serviceEnabled", "true"));
+
         String disabledSites = BaseServlet.optional(request, "disabledSites", StringUtils.EMPTY);
         boolean eanbleClientBeat = Boolean.parseBoolean(BaseServlet.optional(request, "enableClientBeat", "true"));
         String clusterName = BaseServlet.optional(request, "clusterName", UtilsAndCommons.DEFAULT_CLUSTER_NAME);
@@ -558,18 +563,16 @@ public class ApiCommands {
 
             Lock lock = domainsManager.addLock(dom);
             Condition condition = domainsManager.addCondtion(dom);
-
-//            UtilsAndCommons.RAFT_PUBLISH_EXECUTOR.execute(new Runnable() {
-//                @Override
-//                public void run() {
-//                    try {
-            regDom(request);
-//                    } catch (Exception e) {
-//                        Loggers.SRV_LOG.error("REG-SERIVCE", "register service failed, service:" + dom, e);
-//                    }
-//                }
-//            });
-
+            UtilsAndCommons.RAFT_PUBLISH_EXECUTOR.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        regDom(request);
+                    } catch (Exception e) {
+                        Loggers.SRV_LOG.error("REG-SERIVCE", "register service failed, service:" + dom, e);
+                    }
+                }
+            });
             try {
                 lock.lock();
                 condition.await(5000, TimeUnit.MILLISECONDS);
@@ -737,7 +740,7 @@ public class ApiCommands {
             dom.setEnableHealthCheck(Boolean.parseBoolean(enableHealthCheck));
         }
 
-        String enabled = BaseServlet.optional(request, "enabled", StringUtils.EMPTY);
+        String enabled = BaseServlet.optional(request, "serviceEnabled", "true");
         if (!StringUtils.isEmpty(enabled)) {
             dom.setEnabled(Boolean.parseBoolean(enabled));
         }
@@ -979,7 +982,7 @@ public class ApiCommands {
         if (RaftCore.isLeader()) {
             try {
                 domainsManager.getDom2LockMap().get(dom).lock();
-                proxyParams.put("clientIP", NetUtils.localIP());
+                proxyParams.put("clientIP", NetUtils.localServer());
                 proxyParams.put("notify", "true");
 
                 proxyParams.put("term", String.valueOf(RaftCore.getPeerSet().local().term));
@@ -1001,12 +1004,6 @@ public class ApiCommands {
                                     + RunningConfig.getContextPath() + UtilsAndCommons.NACOS_NAMING_CONTEXT + "/api/onAddIP4Dom";
 
                             try {
-//
-//                                if (server.equals(NetUtils.localIP())) {
-//                                    onAddIP4Dom(MockHttpRequest.buildRequest2(proxyParams));
-//                                    return;
-//                                }
-
                                 HttpClient.asyncHttpPost(url, null, proxyParams, new AsyncCompletionHandler() {
                                     @Override
                                     public Integer onCompleted(Response response) throws Exception {
@@ -2033,8 +2030,7 @@ public class ApiCommands {
 
         if (SwitchEntry.ACTION_ADD.equals(action)) {
 
-            List<String> oldList =
-                    IoUtils.readLines(new InputStreamReader(new FileInputStream(UtilsAndCommons.getConfFile()), "UTF-8"));
+            List<String> oldList = readClusterConf();
             StringBuilder sb = new StringBuilder();
             for (String ip : oldList) {
                 sb.append(ip).append("\r\n");
@@ -2044,7 +2040,7 @@ public class ApiCommands {
             }
 
             Loggers.SRV_LOG.info("[UPDATE-CLUSTER] new ips:" + sb.toString());
-            IoUtils.writeStringToFile(UtilsAndCommons.getConfFile(), sb.toString(), "utf-8");
+            writeClusterConf(sb.toString());
             return result;
         }
 
@@ -2055,7 +2051,7 @@ public class ApiCommands {
                 sb.append(ip).append("\r\n");
             }
             Loggers.SRV_LOG.info("[UPDATE-CLUSTER] new ips:" + sb.toString());
-            IoUtils.writeStringToFile(UtilsAndCommons.getConfFile(), sb.toString(), "utf-8");
+            writeClusterConf(sb.toString());
             return result;
         }
 
@@ -2066,8 +2062,7 @@ public class ApiCommands {
                 removeIps.add(ip);
             }
 
-            List<String> oldList =
-                    IoUtils.readLines(new InputStreamReader(new FileInputStream(UtilsAndCommons.getConfFile()), "utf-8"));
+            List<String> oldList = readClusterConf();
 
             Iterator<String> iterator = oldList.iterator();
 
@@ -2084,15 +2079,14 @@ public class ApiCommands {
                 sb.append(ip).append("\r\n");
             }
 
-            IoUtils.writeStringToFile(UtilsAndCommons.getConfFile(), sb.toString(), "utf-8");
+            writeClusterConf(sb.toString());
 
             return result;
         }
 
         if (SwitchEntry.ACTION_VIEW.equals(action)) {
 
-            List<String> oldList =
-                    IoUtils.readLines(new InputStreamReader(new FileInputStream(UtilsAndCommons.getConfFile()), "utf-8"));
+            List<String> oldList = readClusterConf();
             result.put("list", oldList);
 
             return result;
@@ -2311,7 +2305,7 @@ public class ApiCommands {
                     diff.add(ip + "_" + domString);
                 }
 
-                if (ip.equals(NetUtils.localIP())) {
+                if (ip.equals(NetUtils.localServer())) {
                     localDomString = domString;
                 }
 
