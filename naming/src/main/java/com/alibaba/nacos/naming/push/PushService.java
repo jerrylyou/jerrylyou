@@ -162,7 +162,7 @@ public class PushService {
             if (res != null) {
                 Loggers.PUSH.warn("client:" + res.getAddrStr() + " already associated with key " + res.toString());
             }
-            Loggers.PUSH.debug("client: " + client.getAddrStr() + " added for dom: " + client.getDom());
+            Loggers.PUSH.info("client: " + client.getAddrStr() + " added for dom: " + client.getDom());
         }
     }
 
@@ -223,6 +223,7 @@ public class PushService {
                 try {
                     Loggers.PUSH.info(dom + " is changed, add it to push queue.");
                     ConcurrentMap<String, PushClient> clients = clientMap.get(dom);
+                    Loggers.PUSH.info(dom + " clients:" + clients);
                     if (MapUtils.isEmpty(clients)) {
                         return;
                     }
@@ -231,14 +232,14 @@ public class PushService {
                     long lastRefTime = System.nanoTime();
                     for (PushClient client : clients.values()) {
                         if (client.zombie()) {
-                            Loggers.PUSH.debug("client is zombie: " + client.toString());
+                            Loggers.PUSH.info("client is zombie: " + client.toString());
                             clients.remove(client.toString());
-                            Loggers.PUSH.debug("client is zombie: " + client.toString());
+                            Loggers.PUSH.info("client is zombie: " + client.toString());
                             continue;
                         }
 
                         Receiver.AckEntry ackEntry;
-                        Loggers.PUSH.debug("push dom: " + dom + " to cleint: " + client.toString());
+                        Loggers.PUSH.info("push dom: " + dom + " to cleint: " + client.toString());
                         String key = getPushCacheKey(dom, client.getIp(), client.getAgent());
                         byte[] compressData = null;
                         Map<String, Object> data = null;
@@ -247,7 +248,7 @@ public class PushService {
                             compressData = (byte[]) (pair.getValue0());
                             data = (Map<String, Object>) pair.getValue1();
 
-                            Loggers.PUSH.debug("PUSH-CACHE", "cache hit: " + dom + ":" + client.getAddrStr());
+                            Loggers.PUSH.info("PUSH-CACHE", "cache hit: " + dom + ":" + client.getAddrStr());
                         }
 
                         if (compressData != null) {

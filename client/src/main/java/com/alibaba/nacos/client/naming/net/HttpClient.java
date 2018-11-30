@@ -35,8 +35,8 @@ import java.util.zip.GZIPInputStream;
  */
 public class HttpClient {
 
-    public static final int TIME_OUT_MILLIS = Integer.parseInt(System.getProperty("com.taobao.vipserver.ctimeout", "50000"));
-    public static final int CON_TIME_OUT_MILLIS = Integer.parseInt(System.getProperty("com.taobao.vipserver.ctimeout", "3000"));
+    public static final int TIME_OUT_MILLIS = Integer.parseInt(System.getProperty("com.alibaba.nacos.naming.ctimeout", "50000"));
+    public static final int CON_TIME_OUT_MILLIS = Integer.parseInt(System.getProperty("com.alibaba.nacos.naming.ctimeout", "3000"));
     private static final boolean ENABLE_HTTPS = Boolean.parseBoolean(System.getProperty("tls.enable", "false"));
 
     static {

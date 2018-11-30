@@ -17,10 +17,16 @@ package com.alibaba.nacos.naming.controllers;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.nacos.naming.boot.RunningConfig;
+import com.alibaba.nacos.naming.core.DistroMapper;
 import com.alibaba.nacos.naming.core.IpAddress;
 import com.alibaba.nacos.naming.core.VirtualClusterDomain;
 import com.alibaba.nacos.naming.exception.NacosException;
 import com.alibaba.nacos.naming.healthcheck.HealthCheckMode;
+import com.alibaba.nacos.naming.healthcheck.RsInfo;
+import com.alibaba.nacos.naming.misc.HttpClient;
+import com.alibaba.nacos.naming.misc.Loggers;
+import com.alibaba.nacos.naming.misc.Switch;
 import com.alibaba.nacos.naming.misc.UtilsAndCommons;
 import com.alibaba.nacos.naming.web.ApiCommands;
 import com.alibaba.nacos.naming.web.BaseServlet;
@@ -31,10 +37,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.net.HttpURLConnection;
+import java.util.*;
 
 /**
  * @author dungu.zpf
@@ -133,7 +137,7 @@ public class InstanceController extends ApiCommands {
         return srvIPXT(mockHttpRequest);
     }
 
-    @RequestMapping(value = "/instance", method = RequestMethod.GET)
+    @RequestMapping(value = {"/instance", "/instance/detail"}, method = RequestMethod.GET)
     public JSONObject queryDetail(HttpServletRequest request) throws Exception {
 
         String serviceName = BaseServlet.required(request, "serviceName");
@@ -170,6 +174,14 @@ public class InstanceController extends ApiCommands {
         }
 
         throw new IllegalStateException("no matched ip found!");
+    }
 
+    @RequestMapping(value = "/instance/clientBeat", method = RequestMethod.POST)
+    public JSONObject clientBeat2(HttpServletRequest request) throws Exception {
+
+        Map<String, String[]> params = new HashMap<>(request.getParameterMap());
+        params.put("dom", params.get("serviceName"));
+        MockHttpRequest mockHttpRequest = MockHttpRequest.buildRequest(params);
+        return clientBeat(mockHttpRequest);
     }
 }

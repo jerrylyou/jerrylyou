@@ -90,7 +90,7 @@ public class NamingProxy {
     public List<String> getServerListFromEndpoint() {
 
         try {
-            String urlString = "http://" + endpoint + "/vipserver/serverlist";
+            String urlString = "http://" + endpoint + "/nacos/serverlist";
 
             List<String> headers = Arrays.asList("Client-Version", UtilAndComs.VERSION,
                     "Accept-Encoding", "gzip,deflate,sdch",
@@ -193,11 +193,6 @@ public class NamingProxy {
         return reqAPI(UtilAndComs.NACOS_URL_BASE + "/instance/list", params, "GET");
     }
 
-    private String doRegDom(Map<String, String> params) throws Exception {
-        String api = UtilAndComs.NACOS_URL_BASE + "/api/regService";
-        return reqAPI(api, params);
-    }
-
     public boolean serverHealthy() {
 
         try {
@@ -227,6 +222,10 @@ public class NamingProxy {
     }
 
     public String callAllServers(String api, Map<String, String> params) throws NacosException {
+        return callServer(api, params, "GET");
+    }
+
+    public String callAllServers(String api, Map<String, String> params, String method) throws NacosException {
         String result = "";
 
         List<String> snapshot = serversFromEndpoint;
@@ -235,7 +234,7 @@ public class NamingProxy {
         }
 
         try {
-            result = reqAPI(api, params, snapshot);
+            result = reqAPI(api, params, snapshot, method);
         } catch (Exception e) {
             LogUtils.LOG.error("NA", "req api:" + api + " failed, servers: " + snapshot, e);
         }

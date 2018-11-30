@@ -348,9 +348,7 @@ public class ApiCommands {
                 throw new IllegalArgumentException("failed to proxy client beat to" + server + ", beat: " + beat);
             }
         } else {
-            if (virtualClusterDomain != null) {
-                virtualClusterDomain.processClientBeat(clientBeat);
-            }
+            virtualClusterDomain.processClientBeat(clientBeat);
         }
 
         JSONObject result = new JSONObject();
@@ -1134,6 +1132,8 @@ public class ApiCommands {
         checkIfDisabled(domObj);
 
         long cacheMillis = Switch.getCacheMillis(dom);
+
+        Loggers.SRV_LOG.info("srvIPXT:" + dom + ", " + udpPort + ", " + agent);
 
         // now try to enable the push
         try {

@@ -93,10 +93,10 @@ public class BeatReactor {
         public void run() {
             Map<String, String> params = new HashMap<String, String>(2);
             params.put("beat", JSON.toJSONString(beatInfo));
-            params.put("dom", beatInfo.getDom());
+            params.put("serviceName", beatInfo.getDom());
 
             try {
-                String result = serverProxy.callAllServers(UtilAndComs.NACOS_URL_BASE + "/api/clientBeat", params);
+                String result = serverProxy.callAllServers(UtilAndComs.NACOS_URL_BASE + "/instance/clientBeat", params, "POST");
                 JSONObject jsonObject = JSON.parseObject(result);
 
                 if (jsonObject != null) {
