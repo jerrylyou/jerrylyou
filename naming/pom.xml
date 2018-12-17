@@ -19,7 +19,6 @@
         <groupId>com.alibaba.nacos</groupId>
         <artifactId>nacos-all</artifactId>
         <version>0.2.0-SM-SNAPSHOT</version>
-
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -154,6 +153,10 @@
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.nacos</groupId>
+            <artifactId>nacos-cmdb</artifactId>
         </dependency>
 
     </dependencies>
