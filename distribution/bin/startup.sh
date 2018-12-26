@@ -50,7 +50,7 @@ if [[ "${MODE}" == "standalone" ]]; then
     JAVA_OPT="${JAVA_OPT} -Xms512m -Xmx512m -Xmn256m"
     JAVA_OPT="${JAVA_OPT} -Dnacos.standalone=true"
 else
-    JAVA_OPT="${JAVA_OPT} -server -Xms2g -Xmx2g -Xmn1g -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=320m"
+    JAVA_OPT="${JAVA_OPT} -server -Xms4g -Xmx4g -Xmn2g -XX:MetaspaceSize=256m -XX:MaxMetaspaceSize=512m"
     JAVA_OPT="${JAVA_OPT} -XX:-OmitStackTraceInFastThrow -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${BASE_DIR}/logs/java_heapdump.hprof"
     JAVA_OPT="${JAVA_OPT} -XX:-UseLargePages"
 
